@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dhr.dao.CategoryMapperDao">
+	
+	<!-- 配置查询一级分类与二级分类的关联  type:映射的目的地  -->
+	<resultMap type="category" id="categoryList">
+		<id column="cid" property="cid"/>
+		<result column="cname" property="cname"/>
+		<!-- 配置多的一方：所有二级分类  property:集合的名称 javaType:集合的类型 ofType:集合参数的类型-->
+		<collection property="categorySecond" javaType="list" ofType="categorySecond">
+			<id column="csid" property="csid"/>
+			<result column="csname" property="csname"/>
+		</collection>
+	</resultMap>
+	
+	<!-- 查询所有一级分类 一级一级分类对应的二级分类-->
+	<select id="findAllCategory" resultMap="categoryList">
+		SELECT 
+	 	 c.cid,
+	  	 c.cname,
+	  	 cs.csname,
+	  	 cs.csid 
+		FROM
+	  	 category c 
+	  	 LEFT JOIN categorysecond cs 
+	     ON c.cid = cs.cid 
+	</select>
+	
+	<!-- 添加一级分类 -->
+	<insert id="saveCategory" parameterType="string">
+		INSERT INTO category(cname) VALUES(#{cname})
+	</insert>
+	
+	<!-- 查找一级分类 -->
+	<select id="findCategoryByCid" parameterType="int" resultType="category">
+		SELECT cid,cname FROM category WHERE cid = #{cid}
+	</select>
+	
+	<!-- 修改一级分类 -->
+	<update id="updateCategory" parameterType="category">
+		 UPDATE category SET cname=#{cname} WHERE cid=#{cid}
+	</update>
+	
+	<!-- 查找一级分类下的所有二级分类 -->
+	<select id="findAllCategorySecondCid" parameterType="int" resultType="categorySecond">
+		SELECT * FROM categorysecond WHERE cid = #{cid}
+	</select>
+	
+	<!-- 删除一级分类下的所有二级分类 -->
+	<delete id="delCategorySecondCid">
+		DELETE FROM categorysecond WHERE csid IN
+		<foreach collection="list" index="index" item="id" open="(" close=")" separator=",">
+			#{id}
+		</foreach>	  
+	</delete>
+	
+	<!-- 删除一级分类 -->
+	<delete id="delCategoryCid" parameterType="int">
+		DELETE FROM category WHERE cid = #{cid}
+	</delete>
+</mapper>
+
+
+

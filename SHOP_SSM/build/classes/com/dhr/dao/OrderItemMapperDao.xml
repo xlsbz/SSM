@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dhr.dao.OrderItemMapperDao">
+	<!-- 公用select -->
+	<sql id="selectAll">
+		SELECT itemid,count,subtotal,pid,oid,uid FROM orderitem
+	</sql>
+
+	<!-- 保存订单项 -->
+	<insert id="saveOrderItem" parameterType="orderitem">
+		INSERT INTO orderitem(count,subtotal,pid,oid,uid) 
+		values(#{count},#{subtotal},${product.pid},${order.oid},${order.user.uid})
+	</insert>
+</mapper>

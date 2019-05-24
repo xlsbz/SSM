@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dhr.dao.UserMapperDao">
+	
+	<!-- sql片段 -->
+	<sql id="selectUser">
+		SELECT uid,username,name,email,phone,addr,state,code FROM user
+	</sql>
+	
+	<!-- 根据用户名称查询用户 -->
+	<select id="getCheckUsername" parameterType="string" resultType="user">
+		<include refid="selectUser"/>
+		<where>
+			username = #{username}
+		</where>
+	</select>
+	
+	<!-- 检查邮箱是否存在 -->
+	<select id="validationEmail" resultType="user" parameterType="string">
+		<include refid="selectUser"/>
+		<where>
+			email = #{email}
+		</where>
+	</select>
+	
+	<!-- 根据激活码查询用户 -->
+	<select id="findUserCode" resultType="user" parameterType="string">
+		<include refid="selectUser"/>
+		<where>
+			code = #{code}
+		</where>
+	</select>
+	
+	<!-- 修改用户 -->
+	<update id="updateUser" parameterType="user">
+		UPDATE USER SET state = #{state},code=#{code} WHERE uid=#{uid}
+	</update>
+	
+	<!-- 修改用户状态 -->
+	<update id="updateUserState" parameterType="string">
+		UPDATE USER SET state=1 WHERE uid=#{uid}
+	</update>
+	
+	<!-- 添加用户 -->
+	<insert id="insertUser" parameterType="user">
+		insert into user(username,password,name,email,phone,addr,state,code) 
+		values(#{username},#{password},#{name},#{email},#{phone},#{addr},#{state},#{code})
+	</insert>
+	
+	<!-- 修改用户密码和状态 -->
+	<update id="updateUserPassword" parameterType="user">
+		UPDATE USER SET password=#{password},state=#{state} WHERE uid=#{uid}
+	</update>
+	
+	<!-- 用户名登录 -->
+	<select id="loginUserName" parameterType="user" resultType="user">
+		<include refid="selectUser"/>
+		<where>
+			username=#{username} and password=#{password}
+		</where>
+	</select>
+	
+	<!-- 邮箱登录 -->
+	<select id="loginUserEmail" resultType="user" parameterType="user">
+		<include refid="selectUser"/>
+		<where>
+			email=#{email} and password=#{password}	
+		</where>	
+	</select>
+	
+	<!-- *****************************管理员操作********************************************** -->
+	
+	<!-- 查询所有用户 -->
+	<select id="findAllUser" resultType="user">
+		<include refid="selectUser"/>
+	</select>
+	
+</mapper>

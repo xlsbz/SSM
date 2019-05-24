@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dhr.dao.OrderMapperDao">
+	<!-- 保存订单 -->
+	<insert id="saveOrder" parameterType="order">
+		<!--主键是自增长 插入数据后返回主键 -->
+		<selectKey keyProperty="oid" order="AFTER" resultType="int">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO orders (
+		  total,
+		  ordertime,
+		  state,
+		  name,
+		  phone,
+		  addr,
+		  uid
+		) 
+		VALUES
+		  (#{total},#{ordertime},#{state},#{name},#{phone},#{addr},${user.uid})
+	</insert>
+	
+	
+	<!-- 级联查询订单详情,商品详情 -->
+	<resultMap type="order" id="selectOrderById">
+		<!-- 配置订单 -->
+		<id column="oid" property="oid"/>
+		<result column="total" property="total"/>
+		<result column="ordertime" property="ordertime"/>
+		<result column="state" property="state"/>
+		<result column="name" property="name"/>
+		<result column="phone" property="phone"/>
+		<result column="addr" property="addr"/>
+		<!-- 配置user -->
+		<association property="user" javaType="User">
+			<id column="uid" property="uid"/>
+			<result column="username" property="username"/>
+		</association>
+		<!-- 配置订单项 -->
+		<collection property="orderItems" ofType="OrderItem" javaType="list">
+			<id column="itemid" property="itemid"/>
+			<result column="count" property="count"/>
+			<result column="subtotal" property="subtotal"/>
+			<!-- 配置商品对象 -->
+			<association property="product" javaType="Product">
+				<id column="pid" property="pid"/>
+				<result column="pname" property="pname"/>
+				<result column="shop_price" property="shop_price"/>
+				<result column="image" property="image"/>
+			</association>
+		</collection>
+	</resultMap>
+	
+	<!-- 查询用户订单 -->
+	<select id="findOrderById" parameterType="int" resultMap="selectOrderById">
+		SELECT 
+		  o.oid,
+		  o.total,
+		  o.ordertime,
+		  o.state,
+		  o.name,
+		  o.phone,
+		  o.addr,
+		  oi.itemid,
+		  oi.count,
+		  oi.subtotal,
+		  p.pid,
+		  p.pname,
+		  p.shop_price,
+		  p.image,
+		  u.uid,
+		  u.username 
+		FROM
+		  orders o 
+		  LEFT JOIN orderitem oi 
+		    ON o.oid = oi.oid 
+		  LEFT JOIN product p 
+		    ON oi.pid = p.pid 
+		  LEFT JOIN USER u 
+		    ON o.uid = u.uid 
+		WHERE u.uid = #{uid}
+		ORDER BY o.ordertime DESC 
+	</select>
+	
+	
+	<!-- 根据订单ID查询订单 -->
+	<select id="findOrderByOrderId" parameterType="int" resultMap="selectOrderById">
+		SELECT 
+		  o.oid,
+		  o.total,
+		  o.ordertime,
+		  o.state,
+		  o.name,
+		  o.phone,
+		  o.addr,
+		  oi.itemid,
+		  oi.count,
+		  oi.subtotal,
+		  p.pid,
+		  p.pname,
+		  p.shop_price,
+		  p.image,
+		  u.uid,
+		  u.username 
+		FROM
+		  orders o 
+		  LEFT JOIN orderitem oi 
+		    ON o.oid = oi.oid 
+		  LEFT JOIN product p 
+		    ON oi.pid = p.pid 
+		  LEFT JOIN USER u 
+		    ON o.uid = u.uid 
+		WHERE o.oid = #{oid}
+	</select>
+	
+	<!-- 修改订单 -->
+	<update id="updateOrder" parameterType="order">
+		UPDATE 
+		  orders 
+		SET
+		  state = #{state},
+		  name = #{name},
+		  phone = #{phone},
+		  addr = #{addr} 
+		WHERE oid = #{oid} 
+	</update>
+	<update id="updateOrderCid" parameterType="order">
+		UPDATE 
+		  orders 
+		SET
+		  state = #{state}
+		WHERE oid = #{oid} 
+	</update>
+	<!-- ********************************管理员操作******************************************* -->
+	
+	<!-- 根据订单类型查询订单 -->
+	<select id="findOrderType" parameterType="int" resultMap="selectOrderById">
+		SELECT 
+		  o.oid,
+		  o.total,
+		  o.ordertime,
+		  o.state,
+		  o.name,
+		  o.phone,
+		  o.addr,
+		  oi.itemid,
+		  oi.count,
+		  oi.subtotal,
+		  p.pid,
+		  p.pname,
+		  p.shop_price,
+		  p.image,
+		  u.uid,
+		  u.username 
+		FROM
+		  orders o 
+		  LEFT JOIN orderitem oi 
+		    ON o.oid = oi.oid 
+		  LEFT JOIN product p 
+		    ON oi.pid = p.pid 
+		  LEFT JOIN USER u 
+		    ON o.uid = u.uid 
+		    <where>
+		    	<if test="_parameter!=null">
+		    		o.state = #{state}
+		    	</if>
+		    </where>
+	</select>
+	
+	<select id="findOrder" resultMap="selectOrderById">
+		SELECT 
+		  o.oid,
+		  o.total,
+		  o.ordertime,
+		  o.state,
+		  o.name,
+		  o.phone,
+		  o.addr,
+		  oi.itemid,
+		  oi.count,
+		  oi.subtotal,
+		  p.pid,
+		  p.pname,
+		  p.shop_price,
+		  p.image,
+		  u.uid,
+		  u.username 
+		FROM
+		  orders o 
+		  LEFT JOIN orderitem oi 
+		    ON o.oid = oi.oid 
+		  LEFT JOIN product p 
+		    ON oi.pid = p.pid 
+		  LEFT JOIN USER u 
+		    ON o.uid = u.uid 
+	</select>
+</mapper>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dhr.dao.CategorySecondMapperDao">
+
+	<!-- 查询所有二级分类 映射map-->
+	<resultMap type="categorySecond" id="categorySecondList">
+		<!-- 配置二级分类id属性 -->
+		<id column="csid" property="csid"/>
+		<result column="csname" property="csname"/>
+		<!-- 配置一级分类对象 -->
+		<association property="category" javaType="Category">
+			<id column="cid" property="cid"/>
+			<result column="cname" property="cname"/>
+		</association>
+	</resultMap>
+	
+	<!-- 查询二级分类 一级所属的一级分类-->
+	<select id="findAllCategorySecond" resultMap="categorySecondList">
+		SELECT 
+		  c.cid,
+		  c.cname,
+		  cs.csid,
+		  cs.csname 
+		FROM
+		  categorysecond cs,
+		  category c 
+		WHERE cs.cid = c.cid 
+	</select>
+
+	<!-- 添加二级分类 -->
+	<insert id="saveCategorySecond" >
+		INSERT INTO categorysecond(csname,cid) VALUES(#{0},#{1})
+	</insert>
+	
+	<!-- 查找二级分类  级联一级分类-->
+	<select id="findCategorySecondByCsid" parameterType="int" resultMap="categorySecondList">
+		SELECT 
+		  cs.csid,
+		  cs.csname,
+		  c.cid,
+		  c.cname 
+		FROM
+		  categorysecond cs,
+		  category c 
+		WHERE cs.cid = c.cid 
+		  AND cs.csid = #{csid}
+	</select>
+	
+	<!-- 修改二级分类 -->
+	<update id="updateCategorySecond" parameterType="categorySecond">
+	  	UPDATE categorysecond SET csname=#{csname},cid=${category.cid} WHERE csid=#{csid}
+	</update>
+	
+	<!-- 删除二级分类 -->
+	<delete id="delCategorySecond" parameterType="int">
+		DELETE FROM categorysecond WHERE csid = #{csid}
+	</delete>	
+</mapper>

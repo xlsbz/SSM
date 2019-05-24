@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dhr.dao.AdminMapperDao">
+	
+	<!-- sql片段 -->
+	<sql id="selectAll">
+		SELECT uid,username FROM adminuser
+	</sql>
+	
+	<!-- 用户登录 -->
+	<select id="adminLogin" parameterType="admin" resultType="admin">
+		<include refid="selectAll"/>
+		<where>
+			username = #{username} and password = #{password}
+		</where>
+	</select>
+	
+</mapper>

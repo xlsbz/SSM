@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dhr.dao.ProductMapperDao">
+	<!-- 公用块 -->
+	<sql id="selectProduct">
+		SELECT pid,pname,market_price,shop_price,image,pdesc,is_hot,pdate,csid FROM product
+	</sql>
+	<!-- 包含商品所属的二级分类 -->
+	<sql id="selectAll">
+		SELECT pid,pname,market_price,shop_price,image,pdesc,is_hot,pdate,csid,num FROM product
+	</sql>
+	<!-- 配置一的一方二级分类 和一级分类对象-->
+	<resultMap type="product" id="selectProductByid">
+		<!-- 配置商品属性 -->
+		<id column="pid" property="pid"/>
+		<result column="pname" property="pname"/>
+		<result column="market_price" property="market_price"/>
+		<result column="shop_price" property="shop_price"/>
+		<result column="image" property="image"/>
+		<result column="num" property="num"/>
+		<result column="pdesc" property="pdesc"/>
+		<result column="is_hot" property="is_hot"/>
+		<result column="pdate" property="pdate"/>
+		<!-- 配置一的一方对象属性映射-->
+		<association property="categorySecond" javaType="CategorySecond">
+			<id column="csid" property="csid"/>
+			<result column="csname" property="csname"/>
+			<!-- 配置一级分类对象 -->
+			<association property="category" javaType="Category">
+				<id column="cid" property="cid"/>
+				<result column="cname" property="cname"/>
+			</association>
+		</association>
+	</resultMap>
+	
+	
+	
+	<!-- 查询热门 -->
+	<select id="getHotProduct" resultType="product">
+		<include refid="selectProduct"/>
+		LIMIT 10
+	</select>
+	
+	<!-- 查询最新 -->
+	<select id="getNewProduct" resultType="product">
+		<include refid="selectProduct"/>
+		ORDER BY pdate DESC LIMIT 10
+	</select>
+	
+	<!-- 查询喜欢 -->
+	<select id="getLikeProduct" resultType="product" parameterType="int">
+		<include refid="selectProduct"/>
+		LIMIT #{start},15
+	</select>
+	
+	<!-- 分页查询某个一级分类商品 -->
+	<select id="findProductByCid" resultMap="selectProductByid" parameterType="int">
+		SELECT 
+		  p.pid,
+		  p.pname,
+		  p.market_price,
+		  p.shop_price,
+		  p.image,
+		  p.pdesc,
+		  p.is_hot,
+		  p.pdate,
+		  p.num,
+		  cs.csid,
+		  cs.csname,
+		  cs.cid,
+		  c.cid,
+		  c.cname
+		FROM
+		  product p,
+		  category c,
+		  categorysecond cs
+		WHERE p.csid = cs.csid AND c.cid = cs.cid
+		  AND c.cid = #{cid}
+	</select>
+	
+	<!-- 分页查询某个二级分类商品 -->
+	<select id="findProductByCsid" resultMap="selectProductByid" parameterType="int">
+		SELECT 
+		  p.pid,
+		  p.pname,
+		  p.market_price,
+		  p.shop_price,
+		  p.image,
+		  p.pdesc,
+		  p.is_hot,
+		  p.pdate,
+		  p.num,
+		  cs.csid,
+		  cs.csname,
+		  cs.cid,
+		  c.cid,
+		  c.cname
+		FROM
+		  product p,
+		  category c,
+		  categorysecond cs
+		WHERE p.csid = cs.csid AND c.cid = cs.cid
+		  AND cs.csid = #{csid}
+	</select>
+	
+	<!-- 根据商品ID查询商品 -->
+	<select id="findProductById" parameterType="int" resultMap="selectProductByid">
+		SELECT 
+		  p.pid,
+		  p.pname,
+		  p.market_price,
+		  p.shop_price,
+		  p.image,
+		  p.pdesc,
+		  p.is_hot,
+		  p.pdate,
+		  p.num,
+		  cs.csid,
+		  cs.csname,
+		  cs.cid,
+		  c.cid,
+		  c.cname 
+		FROM
+		  product p,
+		  category c,
+		  categorysecond cs 
+		WHERE p.csid = cs.csid 
+		  AND c.cid = cs.cid 
+ 		  AND pid = #{pid}
+	</select>
+	
+	
+	<!-- *********************后台管理员操作***************************************** -->
+	
+	<!-- 查询商品 -->
+	<select id="findAllProduct" resultMap="selectProductByid">
+		SELECT 
+		  p.pid,
+		  p.pname,
+		  p.market_price,
+		  p.shop_price,
+		  p.image,
+		  p.pdesc,
+		  p.is_hot,
+		  p.pdate,
+		  p.num,
+		  cs.csid,
+		  cs.csname,
+		  cs.cid,
+		  c.cid,
+		  c.cname 
+		FROM
+		  product p,
+		  category c,
+		  categorysecond cs 
+		WHERE p.csid = cs.csid 
+		  AND c.cid = cs.cid 
+		ORDER BY pdate DESC 
+	</select>
+	
+	<!-- 删除商品 -->
+	<delete id="delProductById" parameterType="int">
+		DELETE FROM product WHERE pid = #{pid}
+	</delete>
+	
+	<!-- 新增商品 -->
+	<insert id="addProduct" parameterType="product">
+		INSERT INTO product(pname,market_price,shop_price,image,pdesc,is_hot,pdate,csid)
+		VALUES(#{pname},#{market_price},#{shop_price},#{image},#{pdesc},#{is_hot},#{pdate},${categorySecond.csid})
+	</insert>
+	
+	<!-- 修改商品 -->
+	<update id="updateProductByPid" parameterType="product">
+		UPDATE 
+		  product 
+		SET
+		  pname = #{pname},
+		  market_price = #{market_price},
+		  shop_price = #{shop_price},
+		  image = #{image},
+		  pdesc = #{pdesc},
+		  is_hot = #{is_hot},
+		  pdate = #{pdate},
+		  csid = ${categorySecond.csid} 
+		<where>
+			pid = #{pid}
+		</where> 
+	</update>
+	
+</mapper>
